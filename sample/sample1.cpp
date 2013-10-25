@@ -1,4 +1,4 @@
-﻿//simple packet define sample
+//simple packet define sample
 
 //disable the assert
 #define BINPROTO_DISABLE_ASSERT
