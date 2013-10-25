@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.1,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.2,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -26,11 +26,19 @@
 #include <stdint.h>
 #include <assert.h>
 #include <list>
+
 #if defined(_WIN32) || defined(WIN32)
+
 #include <WinSock2.h>
 #pragma comment(lib,"ws2_32.lib")
+//warning C4244: 'argument' : conversion from 'const uint64_t' to 'u_long', possible loss of data
+#pragma warning(disable : 4290)
+//warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+#pragma warning(disable : 4244)
+
 #else
 #include <arpa/inet.h>
+#include <string.h>
 #endif
 
 
@@ -72,7 +80,7 @@ template<> struct _binproto_num_type_max_traits<uint32_t>{
 	static const uint32_t value = UINT32_MAX;
 };
 template<> struct _binproto_num_type_max_traits<uint64_t>{
-	static const uint32_t value = UINT64_MAX;
+	static const uint64_t value = UINT64_MAX;
 };
 #define BINPROTO_UINT_MAX_VALUE(uint_type) (_binproto_num_type_max_traits<uint_type>::value)
 
@@ -127,7 +135,7 @@ namespace binproto
 			:_comment(comment)
 		{
 		}
-		const std::string& what()
+		const std::string& what() const
 		{
 			return _comment;
 		}
@@ -185,19 +193,22 @@ namespace binproto
 	typedef num_obj<uint16_t> uint16_obj;
 	typedef num_obj<uint32_t> uint32_obj;
 	typedef num_obj<uint64_t> uint64_obj;
-	
+
+	template<>
 	uint32_t uint8_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		BINPROTO_PARSE_ENSURE(bufflen >= sizeof(_num),"uint8_obj parse error");
 		_num = buffer[0];
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint8_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 	{
 		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint8_obj serialize error");
 		buffer[0] = _num;
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint16_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		BINPROTO_PARSE_ENSURE(bufflen >= sizeof(_num),"uint16_obj parse error");
@@ -205,6 +216,7 @@ namespace binproto
 		_num = ntohs(_num);
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint16_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 	{
 		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint16_obj serialize error");
@@ -212,6 +224,7 @@ namespace binproto
 		memcpy(buffer,&net_uint,sizeof(net_uint));
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint32_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		BINPROTO_PARSE_ENSURE(bufflen >= sizeof(_num),"uint32_obj parse error");
@@ -219,6 +232,7 @@ namespace binproto
 		_num = ntohl(_num);
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint32_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 	{
 		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint32_obj serialize error");
@@ -226,6 +240,7 @@ namespace binproto
 		memcpy(buffer,&net_uint,sizeof(net_uint));
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint64_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		BINPROTO_PARSE_ENSURE(bufflen >= sizeof(_num),"uint64_obj parse error");
@@ -237,6 +252,7 @@ namespace binproto
 		_num += ntohl(net_uint);
 		return get_binary_len();
 	}
+	template<>
 	uint32_t uint64_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 	{
 		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint64_obj serialize error");
@@ -293,7 +309,7 @@ namespace binproto
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 		{
 			BINPROTO_SERIALIZE_ENSURE(get_binary_len() <= bufflen,"variable_len_string serialize error");
-			BINPROTO_SERIALIZE_ENSURE(_str.length() <= BINPROTO_UINT_MAX_VALUE(len_type::uint_type),"variable_len_string serialize error,len size overflow");
+			BINPROTO_SERIALIZE_ENSURE(_str.length() <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"variable_len_string serialize error,len size overflow");
 			uint32_t temp_len = 0;
 			temp_len+=len_type(_str.length()).serialize_to_buffer(buffer,bufflen);
 			memcpy(buffer+temp_len,_str.c_str(),_str.length());
@@ -485,7 +501,7 @@ namespace binproto
 		{
 			uint32_t temp_len = 0;
 			BINPROTO_SERIALIZE_ENSURE(list_len_size <= bufflen,"binary_obj_list length serialize error");
-			BINPROTO_SERIALIZE_ENSURE(_list.size() <= BINPROTO_UINT_MAX_VALUE(list_size_type::uint_type),"binary_obj_list serialize error,len size overflow");
+			BINPROTO_SERIALIZE_ENSURE(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"binary_obj_list serialize error,len size overflow");
 			temp_len += list_size_type(size()).serialize_to_buffer(buffer, bufflen);
 
 			BINPROTO_SERIALIZE_TRY;
