@@ -46,7 +46,7 @@ int main()
 			Student sd;
 			sd.parse_from_buffer(buffer,BUFF_SIZE);
 			int binlen = sd.get_binary_len();
-			printf("this %s named %s is %d years old.\n",sd.sex.to_string().c_str(),sd.name.to_string().c_str(),sd.age.to_int());
+			printf("this %s named %s is %d years old.\n",sd.sex.c_str(),sd.name.c_str(),sd.age.to_int());
 		}
 	}
 	catch(const binproto::exception& ex)

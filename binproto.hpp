@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.3,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.4,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -110,7 +110,7 @@ template<> struct _binproto_num_type_max_traits<uint64_t>{
 #	define BINPROTO_SERIALIZE_TRY \
 	try{
 #	define BINPROTO_SERIALIZE_CATCH(levelname) \
-	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);};
+	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);return 0;};
 
 #endif
 
@@ -120,7 +120,7 @@ template<> struct _binproto_num_type_max_traits<uint64_t>{
 #define BINPROTO_PARSE_TRY \
 	try{
 #define BINPROTO_PARSE_CATCH(levelname) \
-	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);}
+	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);return 0;}
 
 namespace binproto
 {
@@ -179,8 +179,8 @@ namespace binproto
 		{
 			return _num;
 		}
-		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION;
-		uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception);
+		inline uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION;
+		inline uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception);
 		uint32_t get_binary_len() const
 		{
 			return sizeof(numtype);
@@ -307,9 +307,13 @@ namespace binproto
 			_str.assign(str,size);
 			return *this;
 		}
-		inline const std::string& to_string() const
+		const std::string& to_string() const
 		{
 			return _str;
+		}
+		const char* c_str() const
+		{
+			return _str.c_str();
 		}
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 		{
@@ -344,46 +348,60 @@ namespace binproto
 	class fixed_len_string
 	{
 	public:
-		fixed_len_string():_str(""){}
+		fixed_len_string():_str("")
+		{
+			_str.resize(str_len);
+		}
 		fixed_len_string(const char* str)
 		{
 			size_t strlens = strlen(str);
 			_str.assign(str,strlens > str_len ? str_len : strlens);
+			_str.resize(str_len);
 		}
 		fixed_len_string(const char* str, uint32_t size)
 		{
 			_str.assign(str,size > str_len ? str_len : size);
+			_str.resize(str_len);
 		}
-		fixed_len_string(const std::string& str) : _str(str,str_len)
+		fixed_len_string(const std::string& str) : _str(str, str.size() > str_len ? str_len : str.size())
 		{
+			_str.resize(str_len);
 		}
-		fixed_len_string(const fixed_len_string& str) : _str(str._str,str_len)
+		fixed_len_string(const fixed_len_string& str) : _str(str._str)
 		{
+			_str.resize(str_len);
 		}
 		fixed_len_string& operator=(const std::string& str)
 		{
-			_str.assign(str,0,str_len);
+			_str.assign(str,str.size() > str_len ? str_len : str.size());
+			_str.resize(str_len);
 			return *this;
 		}
 		fixed_len_string& operator=(const char* str)
 		{
 			size_t strlens = strlen(str);
 			_str.assign(str,strlens > str_len ? str_len : strlens);
+			_str.resize(str_len);
 			return *this;
 		}
 		fixed_len_string& operator=(const fixed_len_string& packstring)
 		{
-			_str.assign(packstring._str,0,str_len);
+			_str = packstring._str;
 			return *this;
 		}
 		fixed_len_string& assign(const char* str, uint32_t size)
 		{
 			_str.assign(str,size > str_len ? str_len : size);
+			_str.resize(str_len);
 			return *this;
 		}
-		inline const std::string& to_string() const
+		const std::string& to_string() const
 		{
 			return _str;
+		}
+		const char* c_str() const
+		{
+			return _str.c_str();
 		}
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
 		{
@@ -403,6 +421,7 @@ namespace binproto
 		{
 			BINPROTO_PARSE_ENSURE(str_len <= bufflen,"fixed_len_string parse error");
 			_str.assign(buffer, str_len);
+			_str.resize(str_len);
 			return str_len;
 		}
 		uint32_t get_binary_len() const
