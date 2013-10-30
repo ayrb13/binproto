@@ -11,122 +11,79 @@ You can use it by including a single file conveniently.
 
 ##Example
 
-Define packet type Teacher has 3 members:
+###Define packet type Teacher has 3 members:
 
 * the type of the 1st member name is a string that its length is variable, first 1 byte hold the length, and the content follows it
 * the type of the 2nd member age is a unsigned int,which is 8bit,0-255
 * the type of the 3rd member sex is a string that its length is fixed,the length is 10 bytes.
 * the type of the 4th member subject is a string that its length is variable, first 1 byte hold the length, and the content follows it
- Teacher
 
-  |-----------------|-----------|------------------------|
+Teacher
+<table>
+<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td>1</td><td>size of teacher's name</td><td>1</td><td>number of size</td></tr>
+<tr><td>2</td><td>teacher's name</td><td>n</td><td>string of name</td></tr>
+<tr><td>3</td><td>age</td><td>1</td><td>number of teacher's age</td></tr>
+<tr><td>4</td><td>sex</td><td>10</td><td>fixed length string,left-justified,fill empty \0</td></tr>
+<tr><td>5</td><td>size of teacher's subject</td><td>1</td><td>number of size</td></tr>
+<tr><td>6</td><td>teacher's subject</td><td>n</td><td>string of subject</td></tr>
+</table>
 
-  |   name length   |  1 byte   |count of bytes name need|
-
-  |-----------------|-----------|------------------------|
-
-  |   name string   |  n bytes  |     n = name length    |
-
-  |-----------------|-----------|------------------------|
-
-  |       age       |  1 byte   |      student age       |
-
-  |-----------------|-----------|------------------------|
-
-  |    sex string   | 10 bytes  |  fixed length string   |
-
-  |-----------------|-----------|------------------------|
-
-  | subject length  |  1 byte   |  count of subject need |
-
-  |-----------------|-----------|------------------------|
-
-  |     subject     |  n bytes  |   n = subject length   |
-
-  |-----------------|-----------|------------------------|
-
-
-BINPROTO_DEFINE_PACKET_P04(Teacher
-
-	,binproto::variable_len_string<1>,name
-
-	,binproto::uint8_obj,age
-
-	,binproto::fixed_len_string<10>,sex
-
-	,binproto::variable_len_string<1>,subject);
-
-
-
-
-
-Define packet type Student has 3 members
+	BINPROTO_DEFINE_PACKET_P04(Teacher
+		,binproto::variable_len_string<1>,name
+		,binproto::uint8_obj,age
+		,binproto::fixed_len_string<10>,sex
+		,binproto::variable_len_string<1>,subject);
+ 
+###Define packet type Student has 3 members
 
 * the type of the 1st member name is a string that its length is variable, first 1 byte hold the length, and the content follows it
 * the type of the 2nd member age is a unsigned int,which is 8bit,0-255
 * the type of the 3rd member sex is a string that its length is fixed,the length is 10 bytes.
 
- Student
+Student
+<table>
+<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td>1</td><td>size of student's name</td><td>1</td><td>number of size</td></tr>
+<tr><td>2</td><td>student's name</td><td>n</td><td>string of name</td></tr>
+<tr><td>3</td><td>age</td><td>1</td><td>number of student's age</td></tr>
+<tr><td>4</td><td>sex</td><td>10</td><td>fixed length string,left-justified,fill empty \0</td></tr>
+</table>
 
-  |-----------------|-----------|------------------------|
+	BINPROTO_DEFINE_PACKET_P03(Student
+		,binproto::variable_len_string<1>,name
+		,binproto::uint8_obj,age
+		,binproto::fixed_len_string<10>,sex);
 
-  |   name length   |  1 byte   |count of bytes name need|
-
-  |-----------------|-----------|------------------------|
-
-  |   name string   |  n bytes  |     n = name length    |
-
-  |-----------------|-----------|------------------------|
-
-  |       age       |  1 byte   |      student age       |
-
-  |-----------------|-----------|------------------------|
-
-
-  |    sex string   | 10 bytes  |  fixed length string   |
-
-  |-----------------|-----------|------------------------|
-
-
-BINPROTO_DEFINE_PACKET_P03(Student
-
-	,binproto::variable_len_string<1>,name
-
-	,binproto::uint8_obj,age
-
-	,binproto::fixed_len_string<10>,sex);
-
-
-
-
-Define packet type SchoolClass has 3 members
+###Define packet type SchoolClass has 3 members
 
 * the type of the 1st member class number is a unsigned int,which is 8bit,0-255
 * the type of the 2nd member teacher.
 * the type of the 3rd member student list, and the count of students is 256 at most, so the length size of this list is 1 byte.
 
- SchoolClass
+SchoolClass
+<table>
+<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td>1</td><td>classnum</td><td>1</td><td>number of classnum</td></tr>
+<tr><td>2</td><td>size of teacher's name</td><td>1</td><td>number of size</td></tr>
+<tr><td>3</td><td>teacher's name</td><td>n</td><td>string of name</td></tr>
+<tr><td>4</td><td>age</td><td>1</td><td>number of teacher's age</td></tr>
+<tr><td>5</td><td>sex</td><td>10</td><td>fixed length string,left-justified,fill empty \0</td></tr>
+<tr><td>6</td><td>size of teacher's subject</td><td>1</td><td>number of size</td></tr>
+<tr><td>7</td><td>teacher's subject</td><td>n</td><td>string of subject</td></tr>
+<tr><td>8</td><td>student count</td><td>1</td><td>number of student count</td></tr>
+<tr><td>9</td><td>size of student's name</td><td>1</td><td>number of size</td></tr>
+<tr><td>10</td><td>student's name</td><td>n</td><td>string of name</td></tr>
+<tr><td>11</td><td>age</td><td>1</td><td>number of student's age</td></tr>
+<tr><td>12</td><td>sex</td><td>10</td><td>fixed length string,left-justified,fill empty \0</td></tr>
+<tr><td>13</td><td>next student</td><td>...</td><td>repeat 9 - 12</td></tr>
+</table>
 
-  |-----------------|-----------|------------------------|
-
-  |   class number  |  1 byte   |    like 1 or 2 or 3    |
-
-  |-----------------|-----------|------------------------|
-
-  |     teacher     |  .......  |     teacher struct     |
-
-  |-----------------|-----------|------------------------|
-
-  |   student list  |  .......  |      student list      |
-
-  |-----------------|-----------|------------------------|
-
-
-BINPROTO_DEFINE_PACKET_P03(SchoolClass
-
-	,binproto::uint8_obj,classnum
-
-	,Teacher,teacher
-
-	,(binproto::binary_obj_list<Student,1>),stulist);
+	BINPROTO_DEFINE_PACKET_P03(SchoolClass
+	
+		,binproto::uint8_obj,classnum
+	
+		,Teacher,teacher
+	
+		,(binproto::binary_obj_list<Student,1>),stulist);
 
