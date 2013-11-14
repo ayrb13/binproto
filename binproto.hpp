@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.5,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.6,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -159,6 +159,22 @@ namespace binproto
 		{
 			return _num;
 		}
+		bool operator<(const num_obj& other) const
+		{
+			return _num < other._num;
+		}
+		bool operator==(const num_obj& other) const
+		{
+			return _num == other._num;
+		}
+		bool operator>(const num_obj& other) const
+		{
+			return _num > other._num;
+		}
+		bool operator!=(const num_obj& other) const
+		{
+			return _num != other._num;
+		}
 		inline uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const ;
 		inline uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception);
 		uint32_t get_binary_len() const
@@ -302,6 +318,22 @@ namespace binproto
 		{
 			return _str.c_str();
 		}
+		bool operator<(const variable_len_string& other) const
+		{
+			return _str < other._str;
+		}
+		bool operator==(const variable_len_string& other) const
+		{
+			return _str == other._str;
+		}
+		bool operator>(const variable_len_string& other) const
+		{
+			return _str > other._str;
+		}
+		bool operator!=(const variable_len_string& other) const
+		{
+			return _str != other._str;
+		}
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
 			BINPROTO_ASSERT(get_binary_len() <= bufflen,"variable_len_string serialize error");
@@ -392,6 +424,22 @@ namespace binproto
 		const char* c_str() const
 		{
 			return _str.c_str();
+		}
+		bool operator<(const variable_len_string& other) const
+		{
+			return _str < other._str;
+		}
+		bool operator==(const variable_len_string& other) const
+		{
+			return _str == other._str;
+		}
+		bool operator>(const variable_len_string& other) const
+		{
+			return _str > other._str;
+		}
+		bool operator!=(const variable_len_string& other) const
+		{
+			return _str != other._str;
 		}
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
