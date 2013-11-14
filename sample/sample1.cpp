@@ -2,9 +2,6 @@
 
 //disable the assert
 #define BINPROTO_DISABLE_ASSERT
-
-//serialize not throw exception
-#define BINPROTO_SERIALIZE_NO_THROW
 #include "binproto.hpp"
 
 //define packet type student has 3 members

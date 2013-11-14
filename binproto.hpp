@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.4,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.5,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -94,26 +94,6 @@ template<> struct _binproto_num_type_max_traits<uint64_t>{
 //throw exception;
 #define BINPROTO_THROW(err_msg) throw(binproto::exception(err_msg))
 
-//decide assert or exception when SERIALIZE;
-#ifdef BINPROTO_SERIALIZE_NO_THROW
-#	define BINPROTO_SERIALIZE_THROW_DECLARATION
-#	define BINPROTO_SERIALIZE_ENSURE(expr,err_msg) \
-	BINPROTO_ASSERT(expr,err_msg)
-#	define BINPROTO_SERIALIZE_TRY do{
-#	define BINPROTO_SERIALIZE_CATCH(levelname) }while(0);
-
-#else
-
-#	define BINPROTO_SERIALIZE_THROW_DECLARATION throw(binproto::exception)
-#	define BINPROTO_SERIALIZE_ENSURE(expr,err_msg) \
-	if(!(expr)){throw(binproto::exception(err_msg));}
-#	define BINPROTO_SERIALIZE_TRY \
-	try{
-#	define BINPROTO_SERIALIZE_CATCH(levelname) \
-	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);return 0;};
-
-#endif
-
 //must use try catch mode when parse;
 #define BINPROTO_PARSE_ENSURE(expr,err_msg) \
 	if(!(expr)){throw(exception(err_msg));}
@@ -179,7 +159,7 @@ namespace binproto
 		{
 			return _num;
 		}
-		inline uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION;
+		inline uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const ;
 		inline uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception);
 		uint32_t get_binary_len() const
 		{
@@ -202,9 +182,9 @@ namespace binproto
 		return get_binary_len();
 	}
 	template<>
-	uint32_t uint8_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+	uint32_t uint8_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
-		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint8_obj serialize error");
+		BINPROTO_ASSERT(bufflen >= sizeof(_num),"uint8_obj serialize error");
 		buffer[0] = _num;
 		return get_binary_len();
 	}
@@ -217,9 +197,9 @@ namespace binproto
 		return get_binary_len();
 	}
 	template<>
-	uint32_t uint16_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+	uint32_t uint16_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
-		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint16_obj serialize error");
+		BINPROTO_ASSERT(bufflen >= sizeof(_num),"uint16_obj serialize error");
 		uint16_t net_uint = htons(_num);
 		memcpy(buffer,&net_uint,sizeof(net_uint));
 		return get_binary_len();
@@ -233,9 +213,9 @@ namespace binproto
 		return get_binary_len();
 	}
 	template<>
-	uint32_t uint32_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+	uint32_t uint32_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
-		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint32_obj serialize error");
+		BINPROTO_ASSERT(bufflen >= sizeof(_num),"uint32_obj serialize error");
 		uint32_t net_uint = htonl(_num);
 		memcpy(buffer,&net_uint,sizeof(net_uint));
 		return get_binary_len();
@@ -253,9 +233,9 @@ namespace binproto
 		return get_binary_len();
 	}
 	template<>
-	uint32_t uint64_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+	uint32_t uint64_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
-		BINPROTO_SERIALIZE_ENSURE(bufflen >= sizeof(_num),"uint64_obj serialize error");
+		BINPROTO_ASSERT(bufflen >= sizeof(_num),"uint64_obj serialize error");
 		uint32_t net_uint = htonl(_num>>32);
 		memcpy(buffer,&net_uint,sizeof(net_uint));
 		net_uint = htonl(_num);
@@ -279,21 +259,27 @@ namespace binproto
 		variable_len_string(){}
 		variable_len_string(const char* str)
 		{
+			BINPROTO_ASSERT(strlen(str) <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
 			_str = str;
 		}
 		variable_len_string(const char* str, uint32_t size)
 		{
+			BINPROTO_ASSERT(size <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
 			_str.assign(str,size);
 		}
-		variable_len_string(const std::string& str):_str(str){}
+		variable_len_string(const std::string& str):_str(str){
+			BINPROTO_ASSERT(str.size() <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
+		}
 		variable_len_string(const variable_len_string& str):_str(str._str){}
 		variable_len_string& operator=(const std::string& str)
 		{
+			BINPROTO_ASSERT(str.size() <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
 			_str = str;
 			return *this;
 		}
 		variable_len_string& operator=(const char* str)
 		{
+			BINPROTO_ASSERT(strlen(str) <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
 			_str = str;
 			return *this;
 		}
@@ -304,6 +290,7 @@ namespace binproto
 		}
 		variable_len_string& assign(const char* str, uint32_t size)
 		{
+			BINPROTO_ASSERT(size <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"str len must not larger than len_size max value");
 			_str.assign(str,size);
 			return *this;
 		}
@@ -315,10 +302,9 @@ namespace binproto
 		{
 			return _str.c_str();
 		}
-		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
-			BINPROTO_SERIALIZE_ENSURE(get_binary_len() <= bufflen,"variable_len_string serialize error");
-			BINPROTO_SERIALIZE_ENSURE(_str.length() <= BINPROTO_UINT_MAX_VALUE(typename len_type::uint_type),"variable_len_string serialize error,len size overflow");
+			BINPROTO_ASSERT(get_binary_len() <= bufflen,"variable_len_string serialize error");
 			uint32_t temp_len = 0;
 			temp_len+=len_type(_str.length()).serialize_to_buffer(buffer,bufflen);
 			memcpy(buffer+temp_len,_str.c_str(),_str.length());
@@ -354,17 +340,19 @@ namespace binproto
 		}
 		fixed_len_string(const char* str)
 		{
-			size_t strlens = strlen(str);
-			_str.assign(str,strlens > str_len ? str_len : strlens);
+			BINPROTO_ASSERT(strlen(str) <= str_len,"str len must not larger than template str_len value");
+			_str.assign(str,strlen(str));
 			_str.resize(str_len);
 		}
 		fixed_len_string(const char* str, uint32_t size)
 		{
-			_str.assign(str,size > str_len ? str_len : size);
+			BINPROTO_ASSERT(size <= str_len,"str len must not larger than template str_len value");
+			_str.assign(str,size);
 			_str.resize(str_len);
 		}
-		fixed_len_string(const std::string& str) : _str(str, str.size() > str_len ? str_len : str.size())
+		fixed_len_string(const std::string& str) : _str(str)
 		{
+			BINPROTO_ASSERT(str.size() <= str_len,"str len must not larger than template str_len value");
 			_str.resize(str_len);
 		}
 		fixed_len_string(const fixed_len_string& str) : _str(str._str)
@@ -373,14 +361,15 @@ namespace binproto
 		}
 		fixed_len_string& operator=(const std::string& str)
 		{
-			_str.assign(str,str.size() > str_len ? str_len : str.size());
+			BINPROTO_ASSERT(str.size() <= str_len,"str len must not larger than template str_len value");
+			_str = str;
 			_str.resize(str_len);
 			return *this;
 		}
 		fixed_len_string& operator=(const char* str)
 		{
-			size_t strlens = strlen(str);
-			_str.assign(str,strlens > str_len ? str_len : strlens);
+			BINPROTO_ASSERT(strlen(str) <= str_len,"str len must not larger than template str_len value");
+			_str.assign(str,strlen(str));
 			_str.resize(str_len);
 			return *this;
 		}
@@ -391,7 +380,8 @@ namespace binproto
 		}
 		fixed_len_string& assign(const char* str, uint32_t size)
 		{
-			_str.assign(str,size > str_len ? str_len : size);
+			BINPROTO_ASSERT(size <= str_len,"str len must not larger than template str_len value");
+			_str.assign(str,size);
 			_str.resize(str_len);
 			return *this;
 		}
@@ -403,9 +393,9 @@ namespace binproto
 		{
 			return _str.c_str();
 		}
-		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
-			BINPROTO_SERIALIZE_ENSURE(str_len <= bufflen,"fixed_len_string serialize error");
+			BINPROTO_ASSERT(str_len <= bufflen,"fixed_len_string serialize error");
 			if(_str.size() > str_len)
 			{
 				memcpy(buffer,_str.c_str(),str_len);
@@ -526,20 +516,17 @@ namespace binproto
 		uint32_t size() const{return _list.size();}
 		void clear(){_list.clear();}
 	public:
-		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION
+		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
 			uint32_t temp_len = 0;
-			BINPROTO_SERIALIZE_ENSURE(list_len_size <= bufflen,"binary_obj_list length serialize error");
-			BINPROTO_SERIALIZE_ENSURE(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"binary_obj_list serialize error,len size overflow");
+			BINPROTO_ASSERT(list_len_size <= bufflen,"binary_obj_list length serialize error");
+			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"binary_obj_list serialize error,len size overflow");
 			temp_len += list_size_type(size()).serialize_to_buffer(buffer, bufflen);
-
-			BINPROTO_SERIALIZE_TRY;
 			for(const_iterator it = begin(); it != end(); ++it)
 			{
 				temp_len += it->serialize_to_buffer(buffer+temp_len, bufflen-temp_len);
 			}
 			return temp_len;
-			BINPROTO_SERIALIZE_CATCH("binary_obj_list");
 		}
 		uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 		{
@@ -578,7 +565,7 @@ namespace binproto
 #define BINPROTO_FUNCTION_PARSE(object) temp_len += (object).parse_from_buffer(buffer + temp_len, bufflen - temp_len);
 #define BINPROTO_FUNCTION_PARSE_END return temp_len;}
 
-#define BINPROTO_FUNCTION_SERIALIZE_START uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const BINPROTO_SERIALIZE_THROW_DECLARATION{uint32_t temp_len = 0;
+#define BINPROTO_FUNCTION_SERIALIZE_START uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const {uint32_t temp_len = 0;
 #define BINPROTO_FUNCTION_SERIALIZE(object) temp_len += (object).serialize_to_buffer(buffer + temp_len, bufflen - temp_len);
 #define BINPROTO_FUNCTION_SERIALIZE_END return temp_len;}
 
@@ -609,9 +596,7 @@ BINPROTO_FUNCTION_PARSE(name01) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -629,10 +614,8 @@ BINPROTO_FUNCTION_PARSE(name02) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -653,11 +636,9 @@ BINPROTO_FUNCTION_PARSE(name03) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -681,12 +662,10 @@ BINPROTO_FUNCTION_PARSE(name04) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
 BINPROTO_FUNCTION_SERIALIZE(name04) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -713,13 +692,11 @@ BINPROTO_FUNCTION_PARSE(name05) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
 BINPROTO_FUNCTION_SERIALIZE(name04) \
 BINPROTO_FUNCTION_SERIALIZE(name05) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -749,14 +726,12 @@ BINPROTO_FUNCTION_PARSE(name06) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
 BINPROTO_FUNCTION_SERIALIZE(name04) \
 BINPROTO_FUNCTION_SERIALIZE(name05) \
 BINPROTO_FUNCTION_SERIALIZE(name06) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -789,7 +764,6 @@ BINPROTO_FUNCTION_PARSE(name07) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -797,7 +771,6 @@ BINPROTO_FUNCTION_SERIALIZE(name04) \
 BINPROTO_FUNCTION_SERIALIZE(name05) \
 BINPROTO_FUNCTION_SERIALIZE(name06) \
 BINPROTO_FUNCTION_SERIALIZE(name07) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -833,7 +806,6 @@ BINPROTO_FUNCTION_PARSE(name08) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -842,7 +814,6 @@ BINPROTO_FUNCTION_SERIALIZE(name05) \
 BINPROTO_FUNCTION_SERIALIZE(name06) \
 BINPROTO_FUNCTION_SERIALIZE(name07) \
 BINPROTO_FUNCTION_SERIALIZE(name08) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -881,7 +852,6 @@ BINPROTO_FUNCTION_PARSE(name09) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -891,7 +861,6 @@ BINPROTO_FUNCTION_SERIALIZE(name06) \
 BINPROTO_FUNCTION_SERIALIZE(name07) \
 BINPROTO_FUNCTION_SERIALIZE(name08) \
 BINPROTO_FUNCTION_SERIALIZE(name09) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -933,7 +902,6 @@ BINPROTO_FUNCTION_PARSE(name10) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -944,7 +912,6 @@ BINPROTO_FUNCTION_SERIALIZE(name07) \
 BINPROTO_FUNCTION_SERIALIZE(name08) \
 BINPROTO_FUNCTION_SERIALIZE(name09) \
 BINPROTO_FUNCTION_SERIALIZE(name10) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -989,7 +956,6 @@ BINPROTO_FUNCTION_PARSE(name11) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1001,7 +967,6 @@ BINPROTO_FUNCTION_SERIALIZE(name08) \
 BINPROTO_FUNCTION_SERIALIZE(name09) \
 BINPROTO_FUNCTION_SERIALIZE(name10) \
 BINPROTO_FUNCTION_SERIALIZE(name11) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1049,7 +1014,6 @@ BINPROTO_FUNCTION_PARSE(name12) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1062,7 +1026,6 @@ BINPROTO_FUNCTION_SERIALIZE(name09) \
 BINPROTO_FUNCTION_SERIALIZE(name10) \
 BINPROTO_FUNCTION_SERIALIZE(name11) \
 BINPROTO_FUNCTION_SERIALIZE(name12) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1113,7 +1076,6 @@ BINPROTO_FUNCTION_PARSE(name13) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1127,7 +1089,6 @@ BINPROTO_FUNCTION_SERIALIZE(name10) \
 BINPROTO_FUNCTION_SERIALIZE(name11) \
 BINPROTO_FUNCTION_SERIALIZE(name12) \
 BINPROTO_FUNCTION_SERIALIZE(name13) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1181,7 +1142,6 @@ BINPROTO_FUNCTION_PARSE(name14) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1196,7 +1156,6 @@ BINPROTO_FUNCTION_SERIALIZE(name11) \
 BINPROTO_FUNCTION_SERIALIZE(name12) \
 BINPROTO_FUNCTION_SERIALIZE(name13) \
 BINPROTO_FUNCTION_SERIALIZE(name14) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1253,7 +1212,6 @@ BINPROTO_FUNCTION_PARSE(name15) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1269,7 +1227,6 @@ BINPROTO_FUNCTION_SERIALIZE(name12) \
 BINPROTO_FUNCTION_SERIALIZE(name13) \
 BINPROTO_FUNCTION_SERIALIZE(name14) \
 BINPROTO_FUNCTION_SERIALIZE(name15) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1329,7 +1286,6 @@ BINPROTO_FUNCTION_PARSE(name16) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1346,7 +1302,6 @@ BINPROTO_FUNCTION_SERIALIZE(name13) \
 BINPROTO_FUNCTION_SERIALIZE(name14) \
 BINPROTO_FUNCTION_SERIALIZE(name15) \
 BINPROTO_FUNCTION_SERIALIZE(name16) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1409,7 +1364,6 @@ BINPROTO_FUNCTION_PARSE(name17) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1427,7 +1381,6 @@ BINPROTO_FUNCTION_SERIALIZE(name14) \
 BINPROTO_FUNCTION_SERIALIZE(name15) \
 BINPROTO_FUNCTION_SERIALIZE(name16) \
 BINPROTO_FUNCTION_SERIALIZE(name17) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1493,7 +1446,6 @@ BINPROTO_FUNCTION_PARSE(name18) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1512,7 +1464,6 @@ BINPROTO_FUNCTION_SERIALIZE(name15) \
 BINPROTO_FUNCTION_SERIALIZE(name16) \
 BINPROTO_FUNCTION_SERIALIZE(name17) \
 BINPROTO_FUNCTION_SERIALIZE(name18) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1581,7 +1532,6 @@ BINPROTO_FUNCTION_PARSE(name19) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1601,7 +1551,6 @@ BINPROTO_FUNCTION_SERIALIZE(name16) \
 BINPROTO_FUNCTION_SERIALIZE(name17) \
 BINPROTO_FUNCTION_SERIALIZE(name18) \
 BINPROTO_FUNCTION_SERIALIZE(name19) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
@@ -1673,7 +1622,6 @@ BINPROTO_FUNCTION_PARSE(name20) \
 BINPROTO_PARSE_CATCH(#classname) \
 BINPROTO_FUNCTION_PARSE_END \
 BINPROTO_FUNCTION_SERIALIZE_START \
-BINPROTO_SERIALIZE_TRY \
 BINPROTO_FUNCTION_SERIALIZE(name01) \
 BINPROTO_FUNCTION_SERIALIZE(name02) \
 BINPROTO_FUNCTION_SERIALIZE(name03) \
@@ -1694,7 +1642,6 @@ BINPROTO_FUNCTION_SERIALIZE(name17) \
 BINPROTO_FUNCTION_SERIALIZE(name18) \
 BINPROTO_FUNCTION_SERIALIZE(name19) \
 BINPROTO_FUNCTION_SERIALIZE(name20) \
-BINPROTO_SERIALIZE_CATCH(#classname) \
 BINPROTO_FUNCTION_SERIALIZE_END \
 BINPROTO_FUNCTION_GETLEN_START \
 BINPROTO_FUNCTION_GETLEN(name01) \
