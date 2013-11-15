@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.7,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.8,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -425,19 +425,19 @@ namespace binproto
 		{
 			return _str.c_str();
 		}
-		bool operator<(const variable_len_string& other) const
+		bool operator<(const fixed_len_string& other) const
 		{
 			return _str < other._str;
 		}
-		bool operator==(const variable_len_string& other) const
+		bool operator==(const fixed_len_string& other) const
 		{
 			return _str == other._str;
 		}
-		bool operator>(const variable_len_string& other) const
+		bool operator>(const fixed_len_string& other) const
 		{
 			return _str > other._str;
 		}
-		bool operator!=(const variable_len_string& other) const
+		bool operator!=(const fixed_len_string& other) const
 		{
 			return _str != other._str;
 		}
@@ -563,16 +563,6 @@ namespace binproto
 		}
 		uint32_t size() const{return _list.size();}
 		void clear(){_list.clear();}
-		template<typename key_value>
-		iterator find(key_value obj_type::*member, const key_value& key) const
-		{
-			for(iterator it = begin(); it != end(); ++it)
-			{
-				if(((&*it)->*member) == key)
-					return it;
-			}
-			return end();
-		}
 	public:
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
