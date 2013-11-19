@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.8,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.9,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -100,7 +100,7 @@ template<> struct _binproto_num_type_max_traits<uint64_t>{
 #define BINPROTO_PARSE_TRY \
 	try{
 #define BINPROTO_PARSE_CATCH(levelname) \
-	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);return 0;}
+	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);}
 
 namespace binproto
 {
@@ -482,7 +482,11 @@ namespace binproto
 		typedef typename container::reverse_iterator reverse_iterator;
 		typedef typename container::const_reverse_iterator const_reverse_iterator;
 	public:
-		binary_obj_list<obj_type,list_len_size>():_list()
+		binary_obj_list():_list()
+		{
+		}
+		binary_obj_list(const binary_obj_list& other)
+			:_list(other._list);
 		{
 		}
 		iterator begin()
@@ -520,10 +524,12 @@ namespace binproto
 		void push_back(const obj_type& _Val)
 		{
 			_list.push_back(_Val);
+			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
 		}
 		void push_front(const obj_type& _Val)
 		{
 			_list.push_front(_Val);
+			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
 		}
 		void pop_back()
 		{
@@ -559,16 +565,25 @@ namespace binproto
 		}
 		iterator insert(iterator _Where, const obj_type& _Val)
 		{
-			return _list.insert(_Where,_Val);
+			iterator it = _list.insert(_Where,_Val);
+			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
+			return it;
 		}
 		uint32_t size() const{return _list.size();}
 		void clear(){_list.clear();}
+		binary_obj_list& operator=(const binary_obj_list& other)
+		{
+			_list = other._list;
+		}
+		void swap(binary_obj_list& other)
+		{
+			_list.swap();
+		}
 	public:
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
 			uint32_t temp_len = 0;
 			BINPROTO_ASSERT(list_len_size <= bufflen,"binary_obj_list length serialize error");
-			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"binary_obj_list serialize error,len size overflow");
 			temp_len += list_size_type(size()).serialize_to_buffer(buffer, bufflen);
 			for(const_iterator it = begin(); it != end(); ++it)
 			{
@@ -587,7 +602,7 @@ namespace binproto
 			BINPROTO_PARSE_TRY;
 			for(uint32_t i = 0; i < temp.to_int(); i++)
 			{
-				push_back(obj_type());
+				_list.push_back(obj_type());
 				temp_len += _list.back().parse_from_buffer(buffer + temp_len, bufflen - temp_len);
 			}
 			return temp_len;
@@ -605,6 +620,13 @@ namespace binproto
 		}
 	private:
 		container _list;
+	};
+
+	struct base_packet
+	{
+		virtual uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(binproto::exception) = 0;
+		virtual uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const = 0;
+		virtual uint32_t get_binary_len() const = 0;
 	};
 }
 //macro defination
