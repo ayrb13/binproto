@@ -26,7 +26,7 @@ BINPROTO_DEFINE_PACKET_P03(Student
 
 #define BUFF_SIZE 1024
 
-int main()
+int main1()
 {
 	try
 	{
