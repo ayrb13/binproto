@@ -85,5 +85,5 @@ SchoolClass
 	
 		,Teacher,teacher
 	
-		,(binproto::binary_obj_list<Student,1>),stulist);
+		,binproto::binary_obj_list<Student BINPROTO_COMMA 1>,stulist);
 
