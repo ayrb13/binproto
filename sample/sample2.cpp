@@ -70,7 +70,7 @@ BINPROTO_DEFINE_PACKET_P03(Student
 BINPROTO_DEFINE_PACKET_P03(SchoolClass
 	,binproto::uint8_obj,classnum
 	,Teacher,teacher
-	,(binproto::binary_obj_list<Student,1>),stulist);
+	,binproto::binary_obj_list<Student BINPROTO_COMMA 1>,stulist);
 
 #define BUFF_SIZE 1024*1024
 
