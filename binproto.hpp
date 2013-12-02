@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.12,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.13,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -249,21 +249,21 @@ namespace binproto
 	typedef num_obj<uint64_t> uint64_obj;
 
 	template<>
-	uint32_t uint8_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
+	inline uint32_t uint8_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		_BINPROTO_PARSE_ENSURE(bufflen >= STATIC_BINARY_LENGTH,"uint8_obj parse error");
 		_num = buffer[0];
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint8_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
+	inline uint32_t uint8_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
 		BINPROTO_ASSERT(bufflen >= STATIC_BINARY_LENGTH,"uint8_obj serialize error");
 		buffer[0] = _num;
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint16_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
+	inline uint32_t uint16_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		_BINPROTO_PARSE_ENSURE(bufflen >= STATIC_BINARY_LENGTH,"uint16_obj parse error");
 		memcpy(&_num,buffer,STATIC_BINARY_LENGTH);
@@ -271,7 +271,7 @@ namespace binproto
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint16_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
+	inline uint32_t uint16_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
 		BINPROTO_ASSERT(bufflen >= STATIC_BINARY_LENGTH,"uint16_obj serialize error");
 		uint16_t net_uint = htons(_num);
@@ -279,7 +279,7 @@ namespace binproto
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint32_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
+	inline uint32_t uint32_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		_BINPROTO_PARSE_ENSURE(bufflen >= STATIC_BINARY_LENGTH,"uint32_obj parse error");
 		memcpy(&_num,buffer,STATIC_BINARY_LENGTH);
@@ -287,7 +287,7 @@ namespace binproto
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint32_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
+	inline uint32_t uint32_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
 		BINPROTO_ASSERT(bufflen >= STATIC_BINARY_LENGTH,"uint32_obj serialize error");
 		uint32_t net_uint = htonl(_num);
@@ -295,7 +295,7 @@ namespace binproto
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint64_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
+	inline uint32_t uint64_obj::parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 	{
 		_BINPROTO_PARSE_ENSURE(bufflen >= STATIC_BINARY_LENGTH,"uint64_obj parse error");
 		uint32_t net_uint;
@@ -307,7 +307,7 @@ namespace binproto
 		return STATIC_BINARY_LENGTH;
 	}
 	template<>
-	uint32_t uint64_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
+	inline uint32_t uint64_obj::serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 	{
 		BINPROTO_ASSERT(bufflen >= STATIC_BINARY_LENGTH,"uint64_obj serialize error");
 		uint32_t net_uint = htonl(_num>>32);
