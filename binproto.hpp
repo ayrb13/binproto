@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.14,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.15,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -161,6 +161,18 @@ template<> struct _binproto_uint_size_traits<8>{
 #define _BINPROTO_PARSE_CATCH(levelname) \
 	}catch(const binproto::exception& ex){ex.throw_to_high_level(levelname);return 0;}
 
+//new serialize and parse on std::string function defination
+#define _BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
+uint32_t serialize_to_buffer(std::string& strbuff) const \
+{ \
+	strbuff.resize(get_binary_len()); \
+	return serialize_to_buffer(const_cast<char*>(strbuff.c_str()),strbuff.size()); \
+} \
+uint32_t parse_from_buffer(const std::string& strbuff) throw(binproto::exception) \
+{ \
+	return parse_from_buffer(strbuff.c_str(),strbuff.size()); \
+}
+
 namespace binproto
 {
 	class exception
@@ -237,6 +249,7 @@ namespace binproto
 		}
 		inline uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const ;
 		inline uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception);
+		_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION
 		uint32_t get_binary_len() const
 		{
 			return STATIC_BINARY_LENGTH;
@@ -408,6 +421,7 @@ namespace binproto
 			temp_len += temp.to_int();
 			return temp_len;
 		}
+		_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION
 		uint32_t get_binary_len() const
 		{
 			return len_size	+ _str.length();
@@ -518,6 +532,7 @@ namespace binproto
 			_str.resize(STATIC_BINARY_LENGTH);
 			return STATIC_BINARY_LENGTH;
 		}
+		_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION
 		uint32_t get_binary_len() const
 		{
 			return STATIC_BINARY_LENGTH;
@@ -667,6 +682,7 @@ namespace binproto
 			return temp_len;
 			_BINPROTO_PARSE_CATCH("binary_obj_list");
 		}
+		_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION
 		uint32_t get_binary_len() const
 		{
 			return _get_binary_len_is_static(typename _binproto_bool_value_to_bool_type<obj_type::STATIC_BINARY_LENGTH != 0>::type());
@@ -695,6 +711,8 @@ namespace binproto
 	{
 		virtual uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(binproto::exception) = 0;
 		virtual uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const = 0;
+		virtual uint32_t parse_from_buffer(const std::string& strbuff) throw(binproto::exception) = 0;
+		virtual uint32_t serialize_to_buffer(std::string& strbuff) const = 0;
 		virtual uint32_t get_binary_len() const = 0;
 	};
 }
@@ -732,6 +750,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_SERIALIZE_END \
 	_BINPROTO_FUNCTION_GETLEN_START \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P01(classname, type01, name01) \
@@ -753,6 +772,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN_START \
 	_BINPROTO_FUNCTION_GETLEN(name01) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P02(classname, type01, name01, type02, name02) \
@@ -780,6 +800,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name01) \
 	_BINPROTO_FUNCTION_GETLEN(name02) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P03(classname, type01, name01, type02, name02, type03, name03) \
@@ -813,6 +834,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name02) \
 	_BINPROTO_FUNCTION_GETLEN(name03) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P04(classname, type01, name01, type02, name02, type03, name03, type04, name04) \
@@ -852,6 +874,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name03) \
 	_BINPROTO_FUNCTION_GETLEN(name04) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P05(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05) \
@@ -897,6 +920,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name04) \
 	_BINPROTO_FUNCTION_GETLEN(name05) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P06(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06) \
@@ -948,6 +972,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name05) \
 	_BINPROTO_FUNCTION_GETLEN(name06) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P07(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07) \
@@ -1005,6 +1030,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name06) \
 	_BINPROTO_FUNCTION_GETLEN(name07) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P08(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08) \
@@ -1068,6 +1094,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name07) \
 	_BINPROTO_FUNCTION_GETLEN(name08) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P09(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09) \
@@ -1137,6 +1164,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name08) \
 	_BINPROTO_FUNCTION_GETLEN(name09) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P10(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10) \
@@ -1212,6 +1240,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name09) \
 	_BINPROTO_FUNCTION_GETLEN(name10) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P11(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11) \
@@ -1293,6 +1322,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name10) \
 	_BINPROTO_FUNCTION_GETLEN(name11) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P12(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12) \
@@ -1380,6 +1410,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name11) \
 	_BINPROTO_FUNCTION_GETLEN(name12) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P13(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13) \
@@ -1473,6 +1504,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name12) \
 	_BINPROTO_FUNCTION_GETLEN(name13) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P14(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14) \
@@ -1572,6 +1604,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name13) \
 	_BINPROTO_FUNCTION_GETLEN(name14) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P15(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15) \
@@ -1677,6 +1710,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name14) \
 	_BINPROTO_FUNCTION_GETLEN(name15) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P16(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15, type16, name16) \
@@ -1788,6 +1822,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name15) \
 	_BINPROTO_FUNCTION_GETLEN(name16) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P17(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15, type16, name16, type17, name17) \
@@ -1905,6 +1940,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name16) \
 	_BINPROTO_FUNCTION_GETLEN(name17) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P18(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15, type16, name16, type17, name17, type18, name18) \
@@ -2028,6 +2064,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name17) \
 	_BINPROTO_FUNCTION_GETLEN(name18) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P19(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15, type16, name16, type17, name17, type18, name18, type19, name19) \
@@ -2157,6 +2194,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name18) \
 	_BINPROTO_FUNCTION_GETLEN(name19) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #define BINPROTO_DEFINE_PACKET_P20(classname, type01, name01, type02, name02, type03, name03, type04, name04, type05, name05, type06, name06, type07, name07, type08, name08, type09, name09, type10, name10, type11, name11, type12, name12, type13, name13, type14, name14, type15, name15, type16, name16, type17, name17, type18, name18, type19, name19, type20, name20) \
@@ -2292,6 +2330,7 @@ namespace binproto
 	_BINPROTO_FUNCTION_GETLEN(name19) \
 	_BINPROTO_FUNCTION_GETLEN(name20) \
 	_BINPROTO_FUNCTION_GETLEN_END \
+	_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_STRING_DEFINATION \
 	_BINPROTO_PACKET_DEFINE_END
 
 #endif//__BINPROTO_HPP__
