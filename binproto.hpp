@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.16,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.17,
  * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -411,9 +411,7 @@ namespace binproto
 		}
 		std::string trim() const
 		{
-			std::string::size_type pos = 0;
-			for(;_str[pos]!=0&&pos<_str.size();pos++);
-			return _str.substr(0,pos);
+			return _str.substr(0,strlen(c_str()));
 		}
 		const char* c_str() const
 		{
@@ -527,9 +525,7 @@ namespace binproto
 		}
 		std::string trim() const
 		{
-			std::string::size_type pos = 0;
-			for(;_str[pos]!=0&&pos<_str.size();pos++);
-			return _str.substr(0,pos);
+			return _str.substr(0,strlen(c_str()));
 		}
 		const char* c_str() const
 		{
