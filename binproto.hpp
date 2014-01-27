@@ -1,6 +1,6 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.17,
- * Copyright (C) 2012-2013, Ren Bin (ayrb13@gmail.com)
+ * Binary Protocol Serialize and Parse Library, Version 1.0.18,
+ * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
  * and/or distribute this software for any purpose with or without fee
@@ -584,6 +584,7 @@ namespace binproto
 		BINPROTO_STATIC_ASSERT((_binproto_is_binproto_obj<obj_type>::value),"binary_obj_list obj type must be a binproto object type");
 	public:
 		static const int STATIC_BINARY_LENGTH = 0;
+		static const int list_size_len = list_len_size;
 		typedef num_obj<BINPROTO_UINT_TYPE_FROM_SIZE(list_len_size)> list_size_type;
 		typedef std::list<obj_type> container;
 	public:
@@ -689,12 +690,16 @@ namespace binproto
 		{
 			_list.swap();
 		}
+		list_size_type get_size_obj() const
+		{
+			return list_size_type(size());
+		}
 	public:
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
 			uint32_t temp_len = 0;
 			BINPROTO_ASSERT(list_len_size <= bufflen,"binary_obj_list length serialize error");
-			temp_len += list_size_type(size()).serialize_to_buffer(buffer, bufflen);
+			temp_len += get_size_obj().serialize_to_buffer(buffer, bufflen);
 			for(const_iterator it = begin(); it != end(); ++it)
 			{
 				temp_len += it->serialize_to_buffer(buffer+temp_len, bufflen-temp_len);
