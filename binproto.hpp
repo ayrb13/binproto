@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.18,
+ * Binary Protocol Serialize and Parse Library, Version 1.0.19,
  * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -586,109 +586,108 @@ namespace binproto
 		static const int STATIC_BINARY_LENGTH = 0;
 		static const int list_size_len = list_len_size;
 		typedef num_obj<BINPROTO_UINT_TYPE_FROM_SIZE(list_len_size)> list_size_type;
-		typedef std::list<obj_type> container;
+		typedef std::vector<obj_type> container;
 	public:
 		typedef typename container::iterator iterator;
 		typedef typename container::const_iterator const_iterator;
 		typedef typename container::reverse_iterator reverse_iterator;
 		typedef typename container::const_reverse_iterator const_reverse_iterator;
 	public:
-		binary_obj_list():_list()
+		binary_obj_list():_array()
 		{
 		}
 		binary_obj_list(const binary_obj_list& other)
-			:_list(other._list)
+			:_array(other._array)
 		{
 		}
 		iterator begin()
 		{
-			return _list.begin();
+			return _array.begin();
 		}
 		iterator end()
 		{
-			return _list.end();
+			return _array.end();
 		}
 		const_iterator begin() const
 		{
-			return _list.begin();
+			return _array.begin();
 		}
 		const_iterator end() const
 		{
-			return _list.end();
+			return _array.end();
 		}
 		reverse_iterator rbegin()
 		{
-			return _list.rbegin();
+			return _array.rbegin();
 		}
 		reverse_iterator rend()
 		{
-			return _list.rend();
+			return _array.rend();
 		}
 		const_reverse_iterator rbegin() const
 		{
-			return _list.rbegin();
+			return _array.rbegin();
 		}
 		const_reverse_iterator rend() const
 		{
-			return _list.rend();
+			return _array.rend();
 		}
 		void push_back(const obj_type& _Val)
 		{
-			_list.push_back(_Val);
-			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
-		}
-		void push_front(const obj_type& _Val)
-		{
-			_list.push_front(_Val);
-			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
+			_array.push_back(_Val);
+			BINPROTO_ASSERT(_array.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
 		}
 		void pop_back()
 		{
-			_list.pop_back();
-		}
-		void pop_front()
-		{
-			_list.pop_front();
+			_array.pop_back();
 		}
 		iterator erase(iterator _Where)
 		{
-			return _list.erase(_Where);
+			return _array.erase(_Where);
 		}
 		iterator erase(iterator _First_arg, iterator _Last_arg)
 		{
-			return _list.erase(_First_arg,_Last_arg);
+			return _array.erase(_First_arg,_Last_arg);
 		}
 		obj_type& front()
 		{
-			return _list.front();
+			return _array.front();
 		}
 		obj_type& back()
 		{
-			return _list.back();
+			return _array.back();
 		}
 		const obj_type&  front() const
 		{
-			return _list.front();
+			return _array.front();
 		}
 		const obj_type&  back() const
 		{
-			return _list.back();
+			return _array.back();
+		}
+		obj_type& operator[](uint32_t _Pos)
+		{
+			return _array[_Pos];
+		}
+		const obj_type& operator[](uint32_t _Pos) const
+		{
+			return _array[_Pos];
 		}
 		iterator insert(iterator _Where, const obj_type& _Val)
 		{
-			iterator it = _list.insert(_Where,_Val);
-			BINPROTO_ASSERT(_list.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
+			iterator it = _array.insert(_Where,_Val);
+			BINPROTO_ASSERT(_array.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
 			return it;
 		}
-		uint32_t size() const{return _list.size();}
-		void clear(){_list.clear();}
+		uint32_t size() const{return _array.size();}
+		void clear(){_array.clear();}
 		binary_obj_list& operator=(const binary_obj_list& other)
 		{
-			_list = other._list;
+			_array = other._array;
 		}
 		void swap(binary_obj_list& other)
 		{
-			_list.swap();
+			_array.swap(other._array);
 		}
 		list_size_type get_size_obj() const
 		{
@@ -700,9 +699,10 @@ namespace binproto
 			uint32_t temp_len = 0;
 			BINPROTO_ASSERT(list_len_size <= bufflen,"binary_obj_list length serialize error");
 			temp_len += get_size_obj().serialize_to_buffer(buffer, bufflen);
-			for(const_iterator it = begin(); it != end(); ++it)
+			uint32_t s = size();
+			for(uint32_t i = 0; i < s; i++)
 			{
-				temp_len += it->serialize_to_buffer(buffer+temp_len, bufflen-temp_len);
+				temp_len += _array[i].serialize_to_buffer(buffer+temp_len, bufflen-temp_len);
 			}
 			return temp_len;
 		}
@@ -715,10 +715,11 @@ namespace binproto
 			temp_len += temp.parse_from_buffer(buffer, bufflen);
 
 			_BINPROTO_PARSE_TRY;
+
 			for(uint32_t i = 0; i < temp.to_int(); i++)
 			{
-				_list.push_back(obj_type());
-				temp_len += _list.back().parse_from_buffer(buffer + temp_len, bufflen - temp_len);
+				_array.push_back(obj_type());
+				temp_len += _array.back().parse_from_buffer(buffer + temp_len, bufflen - temp_len);
 			}
 			return temp_len;
 			_BINPROTO_PARSE_CATCH("binary_obj_list");
@@ -738,14 +739,17 @@ namespace binproto
 		uint32_t _get_binary_len_is_static(_binproto_false) const
 		{
 			size_t iLength = list_size_type::STATIC_BINARY_LENGTH;
-			for(const_iterator it = begin(); it != end(); ++it)
+
+			uint32_t s = size();
+			for(uint32_t i = 0; i < s; i++)
 			{
-				iLength += it->get_binary_len();
+				iLength += _array[i].get_binary_len();
 			}
+
 			return iLength;
 		}
 	private:
-		container _list;
+		container _array;
 	};
 
 	struct base_packet
