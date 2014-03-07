@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.0.19,
+ * Binary Protocol Serialize and Parse Library, Version 1.1.0,
  * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -715,11 +715,10 @@ namespace binproto
 			temp_len += temp.parse_from_buffer(buffer, bufflen);
 
 			_BINPROTO_PARSE_TRY;
-
+			_array.resize(temp.to_int());
 			for(uint32_t i = 0; i < temp.to_int(); i++)
 			{
-				_array.push_back(obj_type());
-				temp_len += _array.back().parse_from_buffer(buffer + temp_len, bufflen - temp_len);
+				temp_len += _array[i].parse_from_buffer(buffer + temp_len, bufflen - temp_len);
 			}
 			return temp_len;
 			_BINPROTO_PARSE_CATCH("binary_obj_list");
