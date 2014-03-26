@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.1.0,
+ * Binary Protocol Serialize and Parse Library, Version 1.1.1,
  * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -16,16 +16,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * a.k.a. as Open BSD license
- * (http://www.openbsd.org/cgi-bin/cvsweb/~checkout~/src/share/misc/license.template
+ * (http://www.openbsd.org/cgi-bin/cvsweb/~checkout~/src/share/misc/license.template)
+ *
+ * You can get latest version of this library from github
+ * (https://github.com/ayrb13/binproto)
  */
 
 #ifndef __BINPROTO_HPP__
 #define __BINPROTO_HPP__
 
-#include <string>
 #include <stdint.h>
 #include <assert.h>
-#include <list>
+#include <string>
 #include <vector>
 
 #if defined(_WIN32) || defined(WIN32)
@@ -417,6 +419,10 @@ namespace binproto
 		{
 			return _str.c_str();
 		}
+		uint32_t size() const
+		{
+			return _str.size();
+		}
 		bool operator<(const variable_len_string& other) const
 		{
 			return _str < other._str;
@@ -468,104 +474,107 @@ namespace binproto
 	public:
 		static const int STATIC_BINARY_LENGTH = str_len;
 	public:
-		fixed_len_string():_str("")
+		fixed_len_string()
 		{
-			_str.resize(STATIC_BINARY_LENGTH);
+			memset(_str, 0, STATIC_BINARY_LENGTH + 1);
 		}
 		fixed_len_string(const char* str)
 		{
-			BINPROTO_ASSERT(strlen(str) <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str.assign(str,strlen(str));
-			_str.resize(STATIC_BINARY_LENGTH);
+			_str[STATIC_BINARY_LENGTH] = 0;
+			*this = str;
 		}
 		fixed_len_string(const char* str, uint32_t size)
 		{
-			BINPROTO_ASSERT(size <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str.assign(str,size);
-			_str.resize(STATIC_BINARY_LENGTH);
+			_str[STATIC_BINARY_LENGTH] = 0;
+			assign(str,size);
 		}
-		fixed_len_string(const std::string& str) : _str(str)
+		fixed_len_string(const std::string& str)
 		{
-			BINPROTO_ASSERT(str.size() <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str.resize(STATIC_BINARY_LENGTH);
+			_str[STATIC_BINARY_LENGTH] = 0;
+			*this = str;
 		}
-		fixed_len_string(const fixed_len_string& str) : _str(str._str)
+		fixed_len_string(const fixed_len_string& str)
 		{
-			_str.resize(STATIC_BINARY_LENGTH);
+			_str[STATIC_BINARY_LENGTH] = 0;
+			*this = str;
 		}
 		fixed_len_string& operator=(const std::string& str)
 		{
-			BINPROTO_ASSERT(str.size() <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str = str;
-			_str.resize(STATIC_BINARY_LENGTH);
+			if(str.size() >= STATIC_BINARY_LENGTH)
+			{
+				memcpy(_str,str.c_str(),STATIC_BINARY_LENGTH);
+			}
+			else
+			{
+				memcpy(_str,str.c_str(),str.size());
+				memset(_str + str.size(),0,STATIC_BINARY_LENGTH - str.size());
+			}
 			return *this;
 		}
 		fixed_len_string& operator=(const char* str)
 		{
-			BINPROTO_ASSERT(strlen(str) <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str.assign(str,strlen(str));
-			_str.resize(STATIC_BINARY_LENGTH);
+			uint32_t paralen = strlen(str);
+			if(paralen >= STATIC_BINARY_LENGTH)
+			{
+				memcpy(_str,str,STATIC_BINARY_LENGTH);
+			}
+			else
+			{
+				memcpy(_str,str,paralen);
+				memset(_str + paralen,0,STATIC_BINARY_LENGTH - paralen);
+			}
 			return *this;
 		}
 		fixed_len_string& operator=(const fixed_len_string& packstring)
 		{
-			_str = packstring._str;
+			memcpy(_str,packstring._str,STATIC_BINARY_LENGTH);
 			return *this;
 		}
 		fixed_len_string& assign(const char* str, uint32_t size)
 		{
 			BINPROTO_ASSERT(size <= STATIC_BINARY_LENGTH,"str len must not larger than template str_len value");
-			_str.assign(str,size);
-			_str.resize(STATIC_BINARY_LENGTH);
+			memcpy(_str,str,size);
+			memset(_str+size,0,STATIC_BINARY_LENGTH - size);
 			return *this;
 		}
-		const std::string& to_string() const
+		std::string to_string() const
 		{
-			return _str;
+			return std::string(_str,STATIC_BINARY_LENGTH);
 		}
 		std::string trim() const
 		{
-			return _str.substr(0,strlen(c_str()));
+			return std::string(_str,strlen(_str));
 		}
 		const char* c_str() const
 		{
-			return _str.c_str();
+			return _str;
 		}
 		bool operator<(const fixed_len_string& other) const
 		{
-			return _str < other._str;
+			return memcmp(_str,other._str,STATIC_BINARY_LENGTH) < 0;
 		}
 		bool operator==(const fixed_len_string& other) const
 		{
-			return _str == other._str;
+			return memcmp(_str,other._str,STATIC_BINARY_LENGTH) == 0;
 		}
 		bool operator>(const fixed_len_string& other) const
 		{
-			return _str > other._str;
+			return memcmp(_str,other._str,STATIC_BINARY_LENGTH) > 0;
 		}
 		bool operator!=(const fixed_len_string& other) const
 		{
-			return _str != other._str;
+			return memcmp(_str,other._str,STATIC_BINARY_LENGTH) != 0;
 		}
 		uint32_t serialize_to_buffer(char* buffer,uint32_t bufflen) const 
 		{
 			BINPROTO_ASSERT(STATIC_BINARY_LENGTH <= bufflen,"fixed_len_string serialize error");
-			if(_str.size() > STATIC_BINARY_LENGTH)
-			{
-				memcpy(buffer,_str.c_str(),STATIC_BINARY_LENGTH);
-			}
-			else
-			{
-				memcpy(buffer,_str.c_str(),_str.size());
-				memset(buffer+_str.size(),0,STATIC_BINARY_LENGTH-_str.size());
-			}
+			memcpy(buffer,_str,STATIC_BINARY_LENGTH);
 			return STATIC_BINARY_LENGTH;
 		}
 		uint32_t parse_from_buffer(const char* buffer,uint32_t bufflen) throw(exception)
 		{
 			_BINPROTO_PARSE_ENSURE(STATIC_BINARY_LENGTH <= bufflen,"fixed_len_string parse error");
-			_str.assign(buffer, STATIC_BINARY_LENGTH);
-			_str.resize(STATIC_BINARY_LENGTH);
+			memcpy(_str,buffer,STATIC_BINARY_LENGTH);
 			return STATIC_BINARY_LENGTH;
 		}
 		_BINPROTO_PARSE_AND_SERIALIZE_ON_STD_CONTAINER
@@ -574,7 +583,7 @@ namespace binproto
 			return STATIC_BINARY_LENGTH;
 		}
 	private:
-		std::string _str;
+		mutable char _str[STATIC_BINARY_LENGTH + 1];
 	};
 
 	template<typename obj_type, int list_len_size>
@@ -586,8 +595,8 @@ namespace binproto
 		static const int STATIC_BINARY_LENGTH = 0;
 		static const int list_size_len = list_len_size;
 		typedef num_obj<BINPROTO_UINT_TYPE_FROM_SIZE(list_len_size)> list_size_type;
-		typedef std::vector<obj_type> container;
 	public:
+		typedef std::vector<obj_type> container;
 		typedef typename container::iterator iterator;
 		typedef typename container::const_iterator const_iterator;
 		typedef typename container::reverse_iterator reverse_iterator;
@@ -679,8 +688,18 @@ namespace binproto
 			BINPROTO_ASSERT(_array.size() <= BINPROTO_UINT_MAX_VALUE(typename list_size_type::uint_type),"list size must not larger than list_size_type max value");
 			return it;
 		}
-		uint32_t size() const{return _array.size();}
-		void clear(){_array.clear();}
+		uint32_t size() const
+		{
+			return _array.size();
+		}
+		void clear()
+		{
+			_array.clear();
+		}
+		void swap(binary_obj_list& other)
+		{
+			_array.swap(other._array);
+		}
 		binary_obj_list& operator=(const binary_obj_list& other)
 		{
 			_array = other._array;
