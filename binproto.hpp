@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.1.1,
+ * Binary Protocol Serialize and Parse Library, Version 1.2.0,
  * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -115,6 +115,10 @@ struct _binproto_is_binproto_obj
 };
 
 //max value traits
+#if defined(linux) && !defined(__STDC_LIMIT_MACROS)
+# error "you should predefine __STDC_LIMIT_MACROS on linux"
+#endif
+
 template<typename num_type>
 struct _binproto_num_type_traits
 {
@@ -695,10 +699,6 @@ namespace binproto
 		void clear()
 		{
 			_array.clear();
-		}
-		void swap(binary_obj_list& other)
-		{
-			_array.swap(other._array);
 		}
 		binary_obj_list& operator=(const binary_obj_list& other)
 		{
