@@ -1,5 +1,5 @@
 /*
- * Binary Protocol Serialize and Parse Library, Version 1.2.1,
+ * Binary Protocol Serialize and Parse Library, Version 1.2.2,
  * Copyright (C) 2012-2014, Ren Bin (ayrb13@gmail.com)
  * 
  * This library is free software. Permission to use, copy, modify,
@@ -168,9 +168,9 @@ template<> struct _binproto_uint_size_traits<8>{
 
 //assert;
 #ifdef BINPROTO_DISABLE_ASSERT
-#	define BINPROTO_ASSERT(expr,err_msg) assert(expr)
-#else
 #	define BINPROTO_ASSERT(expr,err_msg) ((void)0)
+#else
+#	define BINPROTO_ASSERT(expr,err_msg) assert(expr)
 #endif
 
 //throw exception;
