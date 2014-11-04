@@ -1,22 +1,21 @@
 #binproto
-##A library for parse and serialize binary transfer protocol based on bytes order written in C++
+##一个顺序的C++序列化反序列化库
 
-Binproto is very easy to define packet structs in C/C++ Macro based on existing binary protocol document.
-You can use it by including a single file conveniently.
+Binproto可以方便的使用C++宏来定义所需要进行序列化反序列化的结构体，你只需要include它就够了
 
-##Feature
-* It supports on WIN/UNIX, written in C/C++
-* Only depend on ANSI C++, portable
-* Easy to use it by including binproto.hpp
+##特性
+* C++编写，支持windows和unix系统
+* 使用标准C++编写，便于移植
+* 使用方便，只需要#include <binproto.hpp>
 
-##Example
+##例子
 
-###Define packet type Teacher has 3 members:
+###定义Teacher这个结构体，有三个成员
 
-* the type of the 1st member name is a string that its length is variable, first 1 byte hold the length, and the content follows it
-* the type of the 2nd member age is a unsigned int,which is 8bit,0-255
-* the type of the 3rd member sex is a string that its length is fixed,the length is 10 bytes.
-* the type of the 4th member subject is a string that its length is variable, first 1 byte hold the length, and the content follows it
+* 第一个成员name是一个变长字符串，可以使用第一个字节保存长度，后续字节为name的内容；
+* 第二个成员是age，取值范围可为0-255，使用一个字节表示；
+* 第三个成员是sex，使用10字节的定长字符串来表示；
+* 第四个成员是subject是一个变长字符串，可以使用第一个字节保存长度，后续字节为subject的内容；
 
 Teacher
 <table>
@@ -35,11 +34,11 @@ Teacher
 		,binproto::fixed_len_string<10>,sex
 		,binproto::variable_len_string<1>,subject);
  
-###Define packet type Student has 3 members
+###定义Student这个结构体，有三个成员
 
-* the type of the 1st member name is a string that its length is variable, first 1 byte hold the length, and the content follows it
-* the type of the 2nd member age is a unsigned int,which is 8bit,0-255
-* the type of the 3rd member sex is a string that its length is fixed,the length is 10 bytes.
+* 第一个成员name是一个变长字符串，可以使用第一个字节保存长度，后续字节为name的内容；
+* 第二个成员是age，取值范围可为0-255，使用一个字节表示；
+* 第三个成员是sex，使用10字节的定长字符串来表示；
 
 Student
 <table>
@@ -55,11 +54,11 @@ Student
 		,binproto::uint8_obj,age
 		,binproto::fixed_len_string<10>,sex);
 
-###Define packet type SchoolClass has 3 members
+###定义SchoolClass这个结构体，有三个成员
 
-* the type of the 1st member class number is a unsigned int,which is 8bit,0-255
-* the type of the 2nd member teacher.
-* the type of the 3rd member student list, and the count of students is 256 at most, so the length size of this list is 1 byte.
+* 第一个成员class number是一个正整数，取值范围可为0-255，用一个字节表示；
+* 第二个成员teacher用上面定义的teacher结构体来表示；
+* 第三个成员student list, 学生的数量最多255个,所以用第一个字节表示长度，后续的字节循环表示student结构体
 
 SchoolClass
 <table>
