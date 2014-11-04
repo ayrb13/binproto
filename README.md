@@ -19,7 +19,7 @@ Binproto可以方便的使用C++宏来定义所需要进行序列化反序列化
 
 Teacher
 <table>
-<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td><em>序号</em></td><td><em>字段名</em></td><td><em>字节数</em></td><td><em>描述</em></td></tr>
 <tr><td>1</td><td>size of teacher's name</td><td>1</td><td>number of size</td></tr>
 <tr><td>2</td><td>teacher's name</td><td>n</td><td>string of name</td></tr>
 <tr><td>3</td><td>age</td><td>1</td><td>number of teacher's age</td></tr>
@@ -42,7 +42,7 @@ Teacher
 
 Student
 <table>
-<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td><em>序号</em></td><td><em>字段名</em></td><td><em>字节数</em></td><td><em>描述</em></td></tr>
 <tr><td>1</td><td>size of student's name</td><td>1</td><td>number of size</td></tr>
 <tr><td>2</td><td>student's name</td><td>n</td><td>string of name</td></tr>
 <tr><td>3</td><td>age</td><td>1</td><td>number of student's age</td></tr>
@@ -62,7 +62,7 @@ Student
 
 SchoolClass
 <table>
-<tr><td><em>Index</em></td><td><em>Name</em></td><td><em>Size (byte)</em></td><td><em>Description</em></td></tr>
+<tr><td><em>序号</em></td><td><em>字段名</em></td><td><em>字节数</em></td><td><em>描述</em></td></tr>
 <tr><td>1</td><td>classnum</td><td>1</td><td>number of classnum</td></tr>
 <tr><td>2</td><td>size of teacher's name</td><td>1</td><td>number of size</td></tr>
 <tr><td>3</td><td>teacher's name</td><td>n</td><td>string of name</td></tr>
@@ -79,10 +79,6 @@ SchoolClass
 </table>
 
 	BINPROTO_DEFINE_PACKET_P03(SchoolClass
-	
 		,binproto::uint8_obj,classnum
-	
 		,Teacher,teacher
-	
 		,binproto::binary_obj_list<Student BINPROTO_COMMA 1>,stulist);
-
