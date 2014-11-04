@@ -82,3 +82,76 @@ SchoolClass
 		,binproto::uint8_obj,classnum
 		,Teacher,teacher
 		,binproto::binary_obj_list<Student BINPROTO_COMMA 1>,stulist);
+
+###定义main函数
+
+	#define BUFF_SIZE 1024*1024
+	int main()
+	{
+		try
+		{
+			char *buffer = new char[BUFF_SIZE];
+			//序列化流程
+			{
+				//定义并填充结构体数据
+				SchoolClass schoolclass;
+				schoolclass.classnum = 1;
+				schoolclass.teacher.name = "Ren Bin";
+				schoolclass.teacher.age = 27;
+				schoolclass.teacher.sex = "male";
+				schoolclass.teacher.subject = "maths";
+				
+				//定义学生结构体并加入到stulist结构中
+				Student sd;
+				sd.name = "Li Ming";
+				sd.age = 13;
+				sd.sex = "male";
+				schoolclass.stulist.push_back(sd);
+	
+				sd.name = "Han Meimei";
+				sd.age = 13;
+				sd.sex = "female";
+				schoolclass.stulist.push_back(sd);
+	
+				sd.name = "Jim";
+				sd.age = 14;
+				sd.sex = "male";
+				schoolclass.stulist.push_back(sd);
+				
+				//这个结构可获得结构体序列化之后的长度
+				int binlen = schoolclass.get_binary_len();
+				//序列化进缓存中
+				schoolclass.serialize_to_buffer(buffer,BUFF_SIZE);
+			}
+			//反序列化流程
+			{
+				//定义结构体
+				SchoolClass schoolclass;
+				//只需要一步就可以从缓存反序列化
+				schoolclass.parse_from_buffer(buffer,BUFF_SIZE);
+				//这个结构可获得结构体序列化之后的长度
+				int binlen = schoolclass.get_binary_len();
+				printf("Class number is %d\n",schoolclass.classnum.to_int());
+				printf("Class teacher named %s teaches %s, and %s age is %d\n"
+					,schoolclass.teacher.name.c_str()
+					,schoolclass.teacher.subject.c_str()
+					,strcmp(schoolclass.teacher.sex.c_str(), "male") == 0 ? "his" : "her"
+					,schoolclass.teacher.age.to_int());
+				printf("Here comes the students\n");
+				for(binproto::binary_obj_list<Student,1>::iterator it = schoolclass.stulist.begin();
+					it != schoolclass.stulist.end(); ++it)
+				{
+					printf("a student named %s, and %s age is %d\n"
+						,it->name.c_str()
+						,strcmp(it->sex.c_str(), "male") == 0 ? "his" : "her"
+						,it->age.to_int());
+				}
+			}
+		}
+		//若反序列化出现问题，则会抛出该异常
+		catch(const binproto::exception& ex)
+		{
+			printf("%s.\n",ex.what().c_str());
+		}
+		return 0;	
+	}
