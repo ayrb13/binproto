@@ -6,7 +6,7 @@ Binproto可以方便的使用C++宏来定义所需要进行序列化反序列化
 ##特性
 * C++编写，支持windows和unix系统
 * 使用标准C++编写，便于移植
-* 使用方便，只需要#include <binproto.hpp>
+* 使用方便，只需要#include “binproto.hpp”
 
 ##例子
 
